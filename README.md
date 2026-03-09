@@ -1,59 +1,64 @@
-# AC Climate Card
+AC Climate Card
+A custom Lovelace card for Home Assistant that gives your AC unit a proper visual interface — animated unit illustration, per-mode color themes, live sensor data, and full climate controls, all from a single entity ID.
 
-Card vizual pentru Home Assistant cu animații, teme per mod și auto-discovery senzori Midea (sau orice AC cu convenție de denumire similară).
+![preview](preview.jpg)
 
-![preview](preview.png)
+What it shows
 
-## Instalare via HACS
+Animated AC unit with airflow, mist particles, and mode-specific effects (orange glow pulse for heat, cool mist for cooling)
+Live data pulled automatically: room temperature, outdoor temperature, power draw, session energy, total energy
+Full controls: temperature up/down, HVAC mode selector, fan mode cycle, swing cycle, on/off toggle
+Color theme shifts per mode — blue for cool, orange for heat, purple for fan, cyan for dry, green for auto
 
-1. HACS → Frontend → ⋮ → **Custom repositories**
-2. Adaugă URL-ul repo-ului, categorie **Lovelace**
-3. Instalează **AC Climate Card**
-4. Adaugă în `configuration.yaml` (dacă nu e deja):
-   ```yaml
-   lovelace:
+
+Installation
+Via HACS (recommended)
+
+Open HACS → Frontend
+Click the three dots in the top right → Custom repositories
+Paste repo URL, set category to Lovelace, click Add
+Find AC Climate Card in the list and click Download
+Add the resource to Home Assistant:
+Option A — UI:
+Settings → Dashboards → three dots → Resources → Add resource
+URL: /hacsfiles/ac-climate-card/ac-climate-card.js
+Type: JavaScript module
+Option B — YAML:
+
+yaml   lovelace:
      resources:
        - url: /hacsfiles/ac-climate-card/ac-climate-card.js
          type: module
-   ```
-   > Sau prin UI: Settings → Dashboards → ⋮ → Resources
 
-## Instalare manuală
+Reload your browser (hard refresh: Ctrl+Shift+R)
 
-1. Copiază `ac-climate-card.js` în `config/www/ac-climate-card/`
-2. Adaugă resource:
-   ```yaml
-   url: /local/ac-climate-card/ac-climate-card.js
-   type: module
-   ```
 
-## Configurare
+Manual installation
 
-```yaml
-type: custom:ac-climate-card
+Download ac-climate-card.js from the latest release
+Copy it to config/www/ac-climate-card/ac-climate-card.js
+Add resource:
+URL: /local/ac-climate-card/ac-climate-card.js
+Type: JavaScript module
+Reload browser
+
+
+Usage
+Add to any dashboard in YAML mode:
+yamltype: custom:ac-climate-card
 entity: climate.midea_ac_152832116516967
-name: Aer Condiționat    # opțional, fallback: friendly_name din HA
-area: living             # opțional, apare sub titlu
-```
+That's it. The card finds all associated sensors on its own.
+Optional config
+yamltype: custom:ac-climate-card
+entity: climate.midea_ac_152832116516967
+name: Aer Condiționat     # overrides the default friendly_name
+area: living room          # shown as subtitle under the name
 
-### Singurul câmp obligatoriu este `entity`.
+Auto-discovery
+Give the card your climate.* entity and it will automatically look for the following sensors based on the entity prefix:
+Displayed asEntity ID patternRoom tempsensor.{prefix}_temperatura_interioaraOutdoor tempsensor.{prefix}_temperatura_exterioaraPower drawsensor.{prefix}_powerSession energysensor.{prefix}_current_energyTotal energysensor.{prefix}_total_energy
+If a sensor doesn't exist or is unavailable, that field just shows -- — no errors, no crashes.
 
-Cardul detectează automat senzorii asociați pe baza prefixului entității climate:
+Compatibility
+Works with any climate entity that exposes standard HA attributes (hvac_mode, temperature, current_temperature, fan_mode, swing_mode). Tested with Midea AC via the midea-ac-py integration. Should work with any other brand that uses the same entity naming pattern.
 
-| Senzor detectat | Entity ID dedus |
-|---|---|
-| Temperatură interioară | `sensor.{prefix}_temperatura_interioara` |
-| Temperatură exterioară | `sensor.{prefix}_temperatura_exterioara` |
-| Consum instant | `sensor.{prefix}_power` |
-| Energie sesiune | `sensor.{prefix}_current_energy` |
-| Energie totală | `sensor.{prefix}_total_energy` |
-
-Dacă un senzor nu există, câmpul respectiv afișează `--` fără erori.
-
-## Funcționalități
-
-- **Teme dinamice** per mod (cool/heat/fan/dry/auto/off) — culori, display LCD, glow
-- **Animații** — lamele, airflow streams, ceață la cool, puls portocaliu la heat
-- **Controale full**: temperatură (−/+), mod HVAC, fan mode (ciclu), swing mode (ciclu), on/off
-- **Date live**: temp interior/exterior, consum W, energie kWh sesiune + total
-- **Progress bar** — distanța dintre temperatura curentă și cea setată
