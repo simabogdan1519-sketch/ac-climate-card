@@ -97,13 +97,6 @@ Works with any `climate` entity that exposes standard HA attributes (`hvac_mode`
 
 ---
 
-## Requirements
 
-- Home Assistant 2023.x or newer
-- HACS (for the managed install path)
-
----
-
-## License
 
 MIT
