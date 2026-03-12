@@ -97,6 +97,3 @@ Works with any `climate` entity that exposes standard HA attributes (`hvac_mode`
 
 ---
 
-
-
-MIT
