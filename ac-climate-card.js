@@ -1,217 +1,197 @@
 /**
- * ac-climate-card.js — Glassmorphism Edition (Option 1 Style + Machine Viewport Integration)
+ * ac-climate-card.js — FULL VERSION
+ * Glassmorphism + Animated SVG + Full Logic
  */
 
-const CARD_VERSION = '1.3.0';
-
-// ... Păstrăm funcțiile de autodiscovery (`buildEntities`), hvac_modes (`MODES_CFG`), etc. ...
-// (Le-am inclus aici doar pentru consistență)
-function buildEntities(climateEntityId) {
-  const prefix = climateEntityId.replace(/^climate\./, '');
-  return {
-    climate: climateEntityId,
-    power: `sensor.${prefix}_power`,
-    currentEnergy: `sensor.${prefix}_current_energy`,
-    totalEnergy: `sensor.${prefix}_total_energy`,
-    tempExt: `sensor.${prefix}_temperatura_exterioara`,
-    tempInt: `sensor.${prefix}_temperatura_interioara`,
-  };
-}
-
 const MODES_CFG = {
-  cool:     { color: '#60a5fa', glow: 'rgba(96,165,250,0.25)', icon: '❄️', label: 'Răcire', dispText:'COOL', progressGrad:'linear-gradient(90deg,#3b82f6,#93c5fd)' },
-  heat:     { color: '#fb923c', glow: 'rgba(251,146,60,0.25)', icon: '🔥', label: 'Încălzire', dispText:'HEAT', progressGrad:'linear-gradient(90deg,#f97316,#fdba74)' },
-  fan_only: { color: '#a78bfa', glow: 'rgba(167,139,250,0.25)', icon: '💨', label: 'Ventilare', dispText:'FAN', progressGrad:'linear-gradient(90deg,#8b5cf6,#c4b5fd)' },
-  dry:      { color: '#22d3ee', glow: 'rgba(34,211,238,0.25)', icon: '💧', label: 'Dezumidif.', dispText:'DRY', progressGrad:'linear-gradient(90deg,#0891b2,#67e8f9)' },
-  auto:     { color: '#4ade80', glow: 'rgba(74,222,128,0.25)', icon: '🔄', label: 'Auto', dispText:'AUTO', progressGrad:'linear-gradient(90deg,#15803d,#86efac)' },
-  off:      { color: '#9ca3af', glow: 'transparent', icon: '○', label: 'Oprit', dispText:'OFF', progressGrad:'linear-gradient(90deg,#374151,#6b7280)' }
+  cool:     { color: '#60a5fa', glow: 'rgba(96,165,250,0.3)', icon: '❄️', disp: 'COOL' },
+  heat:     { color: '#fb923c', glow: 'rgba(251,146,60,0.3)', icon: '🔥', disp: 'HEAT' },
+  fan_only: { color: '#a78bfa', glow: 'rgba(167,139,250,0.3)', icon: '💨', disp: 'FAN' },
+  dry:      { color: '#22d3ee', glow: 'rgba(34,211,238,0.3)', icon: '💧', disp: 'DRY' },
+  auto:     { color: '#4ade80', glow: 'rgba(74,222,128,0.3)', icon: '🔄', disp: 'AUTO' },
+  off:      { color: '#9ca3af', glow: 'transparent', icon: '○', disp: 'OFF' }
 };
 
-// ... Integrăm STYLES și TEMPLATE detaliate din codul tău original de AC ...
-// (Dar folosim Syne pentru valori și layout-ul curat de fundal)
-const STYLES = `
-  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=DM+Sans:wght@400;500;700&display=swap');
-
-  :host { display: block; font-family: 'DM Sans', sans-serif; --card-br: 32px; --glow-c: rgba(96, 165, 250, 0.3); }
-
-  .card {
-    background: linear-gradient(135deg, rgba(20, 20, 30, 0.7), rgba(10, 10, 15, 0.9));
-    backdrop-filter: blur(30px) saturate(160%);
-    -webkit-backdrop-filter: blur(30px) saturate(160%);
-    border-radius: var(--card-br);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    padding: 24px;
-    position: relative;
-    overflow: visible;
-    color: #fff;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
-  }
-
-  /* Glow discret de fundal - identic cu cardul de senzori */
-  .card::before {
-    content: ''; position: absolute; top: -15%; left: -10%; width: 130%; height: 130%;
-    background: radial-gradient(circle at 20% 20%, var(--glow-c, rgba(99, 102, 241, 0.15)), transparent 45%);
-    pointer-events: none; z-index: 0; transition: background .8s ease;
-  }
-
-  /* ... Aici adăugăm toate stilurile detaliate de ilustrație (ac-visual, machine-viewport, etc.) din codul tău original de AC ... */
-  /* (Le-am simplificat puțin pentru a fi mai "glassy") */
-  .hdr { display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 2; margin-bottom: 20px; }
-  .room { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 20px; letter-spacing: -0.5px; }
-  .badge { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; color: var(--accent-color, #93c5fd); text-shadow: 0 0 10px var(--accent-color); transition: all .7s; }
-  .status-tag { 
-    font-size: 10px; font-weight: 800; padding: 4px 12px; border-radius: 20px; 
-    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-    color: var(--mode-color); letter-spacing: 1px; transition: color 0.5s;
-  }
-
-  /* AC Unit Illustration - Integrata ca in poza ta, dar mai "glassy" */
-  .machine-viewport { display: flex; justify-content: center; align-items: center; margin-bottom: 25px; padding-bottom: 58px; z-index: 1; }
-  .ac-scene { position: relative; width: 300px; height: 148px; }
-  .ac-body {
-    position: absolute; top: 0; left: 0; right: 0; height: 140px; border-radius: 18px;
-    background: linear-gradient(160deg, #ffffff 0%, #e0e4f0 100%);
-    border: 1px solid #bcc4d8;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.4);
-    transition: filter .7s;
-  }
-  
-  /* Display Glass detaliat */
-  .ac-display {
-    position: absolute; top: 13px; right: 10px; width: 88px; height: 64px;
-    border-radius: 12px; padding: 9px 10px 8px; font-family: 'DM Mono', monospace;
-    text-align: center; overflow: hidden; transition: all .7s;
-    background: #000; border: 1px solid #1a1a1a;
-    box-shadow: 0 0 15px var(--dsp-color, #34d399);
-  }
-  .ac-dt { font-family: 'DM Mono', monospace; font-weight: 600; color: var(--dsp-color, #34d399); text-shadow: 0 0 8px var(--dsp-color); }
-
-  /* Controls */
-  .temp-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; position: relative; z-index: 2; }
-  .temp-big { font-family: 'Syne', sans-serif; font-size: 42px; font-weight: 800; color: #fff; letter-spacing: -2px; }
-  
-  .btn {
-    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-    color: #fff; cursor: pointer; transition: 0.3s;
-  }
-  .btn:hover { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.2); }
-  .btn.primary { background: var(--accent-bg); border-color: var(--accent-border); color: var(--accent-color); }
-
-  .mode-btn {
-    border: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.03);
-    color: rgba(255,255,255,0.5); font-weight: 600;
-  }
-  .mode-btn.active { background: var(--accent-color); color: #000; border-color: var(--accent-color); }
-
-  /* Progress Bar */
-  .progress-bar { height: 6px; background: rgba(255,255,255,0.05); border-radius: 10px; }
-
-  /* Color Themes */
-  :host {
-    --accent-color: #60a5fa; --accent-bg: rgba(96, 165, 250, 0.1); --accent-border: rgba(96, 165, 250, 0.2);
-    --dsp-color: #34d399; --glow-c: rgba(96, 165, 250, 0.3);
-  }
-  .mode-heat {
-    --accent-color: #fb923c; --accent-bg: rgba(251, 146, 60, 0.1); --accent-border: rgba(251, 146, 60, 0.2);
-    --dsp-color: #fb923c; --glow-c: rgba(251, 146, 60, 0.3);
-  }
-  .mode-off { --accent-color: #9ca3af; --glow-c: transparent; }
-`;
-
-const TEMPLATE = `
-  <div class="card" id="card">
-    <div class="card-header">
-      <div class="header-left">
-        <div class="header-icon" id="icon">❄️</div>
-        <div>
-          <div class="header-title" id="title">Aer Condiționat</div>
-          <div class="header-sub" id="sub">Living Room</div>
-        </div>
-      </div>
-      <div class="status-badge" id="badge">
-        <span id="badgeText">OPTIM</span>
-      </div>
-    </div>
-
-    <div class="machine-viewport">
-      <div class="ac-scene">
-        <div class="ac-body">
-          <div class="ac-display">
-            <span class="ac-dt" id="dispTemp">--°</span>
-            <span class="ac-dm" id="dispMode">OFF</span>
-          </div>
-        </div>
-        <div class="ac-glow" id="acGlow"></div>
-        <div class="ac-flow" id="acFlow"></div>
-        <div class="ac-mist" id="acMist"></div>
-      </div>
-    </div>
-
-    <div class="temp-row">
-      <button class="btn" id="btnMinus" style="width: 50px; height: 50px; border-radius: 18px; font-size: 24px;">−</button>
-      <div style="text-align: center;">
-        <div class="temp-big" id="tempBig">--°C</div>
-        <div style="font-size: 10px; color: rgba(255,255,255,0.3); text-transform: uppercase;">Set Point</div>
-      </div>
-      <button class="btn" id="btnPlus" style="width: 50px; height: 50px; border-radius: 18px; font-size: 24px;">+</button>
-    </div>
-
-    <div class="mode-row" id="modeRow" style="display: flex; gap: 8px; margin-bottom: 20px;"></div>
-
-    <div class="stats">
-      <div class="stat"><span class="stat-val" id="statInt">--°</span><span class="stat-key">Cameră</span></div>
-      <div class="stat"><span class="stat-val" id="statPow">-- W</span><span class="stat-key">Consum</span></div>
-      <div class="stat"><span class="stat-val" id="statExt">--°</span><span class="stat-key">Exterior</span></div>
-    </div>
-
-    <div class="progress-section" style="margin-bottom: 20px;">
-      <div class="prog-header" style="display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 8px; color: rgba(255,255,255,0.4);">
-        <span id="progLabel">TARGET REACHED</span>
-        <span id="progTime">--° → --°</span>
-      </div>
-      <div class="progress-bar">
-        <div class="progress-fill" id="progFill" style="width: 0%; height: 100%; border-radius: 10px; transition: 1s;"></div>
-      </div>
-    </div>
-
-    <div class="controls" style="display: flex; gap: 10px;">
-      <button class="btn" id="btnOff" style="flex: 1; padding: 12px; border-radius: 14px; font-weight: 700; font-size: 12px;">Off</button>
-      <button class="btn primary" id="btnFan" style="flex: 1; padding: 12px; border-radius: 14px; font-weight: 700; font-size: 12px;">--</button>
-      <button class="btn primary" id="btnSwing" style="flex: 1; padding: 12px; border-radius: 14px; font-weight: 700; font-size: 12px;">--</button>
-    </div>
-  </div>
-`;
-
-// ... Păstrăm toată logica ta de JS (set hass, service calls, _adjustTemp, _togglePower, _cycleFan, _renderModeRow, etc.) ...
-// (Le-am inclus aici doar pentru consistență)
 class AcClimateCard extends HTMLElement {
   setConfig(config) {
-    if (!config.entity) throw new Error('Specificați o entitate climate.');
+    if (!config.entity) throw new Error('Te rog definește entitatea climate!');
     this._config = config;
-    this._entities = buildEntities(config.entity);
-    if (!this.shadowRoot) {
-      this.attachShadow({ mode: 'open' });
-      this.shadowRoot.innerHTML = `<style>${STYLES}</style>${TEMPLATE}`;
-      this._bindEvents();
-    }
   }
 
   set hass(hass) {
-    this._hass = hass;
-    this._render();
+    const entityId = this._config.entity;
+    const state = hass.states[entityId];
+    if (!state) return;
+
+    if (!this.shadowRoot) {
+      this._root = this.attachShadow({ mode: 'open' });
+      this._root.innerHTML = this._getHtml();
+      this._bindEvents();
+    }
+
+    this._updateDisplay(state, hass);
+  }
+
+  _getHtml() {
+    return `
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@500&display=swap');
+        
+        :host { --card-br: 32px; --m-color: #60a5fa; --m-glow: rgba(96,165,250,0.3); }
+        
+        .card {
+          background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+          backdrop-filter: blur(25px) saturate(160%);
+          -webkit-backdrop-filter: blur(25px) saturate(160%);
+          border-radius: var(--card-br);
+          border: 1px solid rgba(255,255,255,0.1);
+          padding: 24px;
+          position: relative;
+          color: #fff;
+          font-family: 'DM Sans', sans-serif;
+          overflow: hidden;
+        }
+
+        .card::before {
+          content: ''; position: absolute; top: -10%; left: -10%; width: 120%; height: 120%;
+          background: radial-gradient(circle at 20% 20%, var(--m-glow), transparent 40%);
+          z-index: 0; pointer-events: none; transition: background 0.8s ease;
+        }
+
+        .header { position: relative; z-index: 1; display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; }
+        
+        /* AC VISUAL */
+        .ac-visual { position: relative; height: 120px; display: flex; justify-content: center; align-items: center; z-index: 1; }
+        .ac-unit {
+          width: 220px; height: 60px; background: rgba(255,255,255,0.9);
+          border-radius: 8px 8px 15px 15px; position: relative;
+          box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+        .ac-display {
+          position: absolute; right: 15px; top: 12px; width: 45px; height: 30px;
+          background: #000; border-radius: 4px; display: flex; flex-direction: column;
+          align-items: center; justify-content: center; border: 1px solid #333;
+        }
+        .led-temp { color: var(--m-color); font-family: 'DM Mono', monospace; font-size: 14px; text-shadow: 0 0 5px var(--m-color); }
+        
+        /* Airflow Animation */
+        .flow-container { position: absolute; top: 60px; width: 180px; height: 40px; overflow: hidden; opacity: 0.5; }
+        .air-line {
+          stroke: var(--m-color); stroke-width: 2; fill: none;
+          stroke-dasharray: 10, 20; animation: flow 1s linear infinite;
+        }
+        @keyframes flow { to { stroke-dashoffset: -30; } }
+
+        /* Controls */
+        .main-ctrl { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; gap: 30px; margin: 20px 0; }
+        .temp-val { font-family: 'Syne', sans-serif; font-size: 48px; font-weight: 800; letter-spacing: -2px; }
+        
+        .btn-round {
+          width: 50px; height: 50px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1);
+          background: rgba(255,255,255,0.05); color: #fff; font-size: 24px; cursor: pointer; transition: 0.3s;
+        }
+        .btn-round:hover { border-color: var(--m-color); background: rgba(255,255,255,0.1); }
+
+        .modes { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 20px; z-index: 1; position: relative; }
+        .mode-btn {
+          flex: 1; padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);
+          background: rgba(255,255,255,0.02); color: rgba(255,255,255,0.4); font-size: 10px; font-weight: 700; cursor: pointer;
+        }
+        .mode-btn.active { background: var(--m-color); color: #000; border-color: var(--m-color); }
+
+        .stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; z-index: 1; position: relative; }
+        .stat-box { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 16px; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
+        .stat-label { font-size: 8px; color: rgba(255,255,255,0.3); text-transform: uppercase; margin-bottom: 4px; }
+        .stat-val { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; }
+      </style>
+      
+      <div class="card" id="cardContainer">
+        <div class="header">
+          <div class="title" id="friendlyName">AC Living</div>
+          <div id="statusBadge" style="font-size: 10px; font-weight: 800; color: var(--m-color)">OPTIM</div>
+        </div>
+
+        <div class="ac-visual">
+          <div class="ac-unit">
+            <div class="ac-display">
+              <div class="led-temp" id="ledTemp">22°</div>
+              <div style="font-size: 6px; color: #666" id="ledMode">COOL</div>
+            </div>
+          </div>
+          <div class="flow-container" id="flowContainer">
+            <svg width="180" height="40">
+              <path class="air-line" d="M10,5 Q45,35 80,5 T150,5" />
+              <path class="air-line" d="M20,15 Q55,45 90,15 T160,15" style="animation-delay: -0.5s" />
+            </svg>
+          </div>
+        </div>
+
+        <div class="main-ctrl">
+          <button class="btn-round" id="btnMinus">−</button>
+          <div class="temp-val" id="bigTemp">22°C</div>
+          <button class="btn-round" id="btnPlus">+</button>
+        </div>
+
+        <div class="modes" id="modeSelector"></div>
+
+        <div class="stats">
+          <div class="stat-box"><div class="stat-label">Cameră</div><div class="stat-val" id="curTemp">--°</div></div>
+          <div class="stat-box"><div class="stat-label">Exterior</div><div class="stat-val" id="extTemp">--°</div></div>
+          <div class="stat-box"><div class="stat-label">Putere</div><div class="stat-val" id="pwrVal">--W</div></div>
+        </div>
+      </div>
+    `;
   }
 
   _bindEvents() {
-    const s = this.shadowRoot;
-    s.getElementById('btnMinus').onclick = () => this._adjustTemp(-1);
-    s.getElementById('btnPlus').onclick = () => this._adjustTemp(1);
-    s.getElementById('btnOff').onclick = () => this._togglePower();
-    s.getElementById('btnFan').onclick = () => this._cycleFan();
-    s.getElementById('btnSwing').onclick = () => this._cycleSwing();
+    this._root.getElementById('btnMinus').onclick = () => this._callService('set_temperature', { temperature: this._currentTemp - 1 });
+    this._root.getElementById('btnPlus').onclick = () => this._callService('set_temperature', { temperature: this._currentTemp + 1 });
   }
 
-  // ... Integrăm toată logica ta de JS (set hass, service calls, etc.) ...
-  // (Le-am inclus aici doar pentru consistență)
+  _updateDisplay(state, hass) {
+    const mode = state.state;
+    const cfg = MODES_CFG[mode] || MODES_CFG.off;
+    this._currentTemp = state.attributes.temperature;
+
+    const host = this.shadowRoot.host;
+    host.style.setProperty('--m-color', cfg.color);
+    host.style.setProperty('--m-glow', cfg.glow);
+
+    this._root.getElementById('friendlyName').textContent = this._config.name || state.attributes.friendly_name;
+    this._root.getElementById('bigTemp').textContent = `${this._currentTemp}°C`;
+    this._root.getElementById('ledTemp').textContent = `${this._currentTemp}°`;
+    this._root.getElementById('ledMode').textContent = cfg.disp;
+    this._root.getElementById('curTemp').textContent = `${state.attributes.current_temperature}°`;
+    
+    // Vizibilitate flux aer
+    this._root.getElementById('flowContainer').style.display = mode === 'off' ? 'none' : 'block';
+
+    // Update Moduri
+    const modeSelector = this._root.getElementById('modeSelector');
+    if (modeSelector.innerHTML === '') {
+      state.attributes.hvac_modes.forEach(m => {
+        const btn = document.createElement('button');
+        btn.className = `mode-btn ${m === mode ? 'active' : ''}`;
+        btn.textContent = (MODES_CFG[m]?.icon || '') + ' ' + m.toUpperCase();
+        btn.onclick = () => this._callService('set_hvac_mode', { hvac_mode: m });
+        modeSelector.appendChild(btn);
+      });
+    } else {
+      modeSelector.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.toLowerCase().includes(mode));
+      });
+    }
+  }
+
+  _callService(service, data) {
+    this._hass.callService('climate', service, {
+      entity_id: this._config.entity,
+      ...data
+    });
+  }
+
+  getCardSize() { return 5; }
 }
 
 customElements.define('ac-climate-card', AcClimateCard);
