@@ -1,36 +1,27 @@
 /**
- * ac-climate-card.js — FULL FUNCTIONALITY + PREMIUM GLASS DESIGN
+ * ac-climate-card.js — PREMIUM GLASS EDITION
+ * Design: Expert Minimalist / Glassmorphism
  */
 
-const MODES_CFG = {
-  cool:     { color: '#60a5fa', glow: 'rgba(96,165,250,0.25)', icon: '❄️', disp: 'COOL' },
-  heat:     { color: '#fb923c', glow: 'rgba(251,146,60,0.25)', icon: '🔥', disp: 'HEAT' },
-  fan_only: { color: '#a78bfa', glow: 'rgba(167,139,250,0.25)', icon: '💨', disp: 'FAN' },
-  dry:      { color: '#22d3ee', glow: 'rgba(34,211,238,0.25)', icon: '💧', disp: 'DRY' },
-  auto:     { color: '#4ade80', glow: 'rgba(74,222,128,0.25)', icon: '🔄', disp: 'AUTO' },
-  off:      { color: '#9ca3af', glow: 'transparent', icon: '○', disp: 'OFF' }
+const MODES_THEME = {
+  cool:     { color: '#60a5fa', glow: 'rgba(96,165,250,0.3)', label: 'COOL' },
+  heat:     { color: '#fb923c', glow: 'rgba(251,146,60,0.3)', label: 'HEAT' },
+  fan_only: { color: '#a78bfa', glow: 'rgba(167,139,250,0.3)', label: 'FAN' },
+  dry:      { color: '#22d3ee', glow: 'rgba(34,211,238,0.3)', label: 'DRY' },
+  auto:     { color: '#4ade80', glow: 'rgba(74,222,128,0.3)', label: 'AUTO' },
+  off:      { color: '#9ca3af', glow: 'transparent', label: 'OFF' }
 };
-
-function buildEntities(climateEntityId) {
-  const prefix = climateEntityId.replace(/^climate\./, '');
-  return {
-    climate: climateEntityId,
-    power: `sensor.${prefix}_power`,
-    tempExt: `sensor.${prefix}_temperatura_exterioara`,
-    tempInt: `sensor.${prefix}_temperatura_interioara`,
-  };
-}
 
 class AcClimateCard extends HTMLElement {
   setConfig(config) {
-    if (!config.entity) throw new Error('Definește entitatea!');
+    if (!config.entity) throw new Error('Specificați entitatea climate.');
     this._config = config;
-    this._entities = buildEntities(config.entity);
   }
 
   set hass(hass) {
     this._hass = hass;
-    const state = hass.states[this._config.entity];
+    const entityId = this._config.entity;
+    const state = hass.states[entityId];
     if (!state) return;
 
     if (!this.shadowRoot) {
@@ -44,103 +35,133 @@ class AcClimateCard extends HTMLElement {
   _getHtml() {
     return `
       <style>
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;700&display=swap');
+        
         :host { --m-color: #60a5fa; --m-glow: rgba(96,165,250,0.3); }
+
         .card {
-          background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
-          backdrop-filter: blur(25px) saturate(160%);
-          border-radius: 32px; border: 1px solid rgba(255,255,255,0.1);
-          padding: 24px; position: relative; color: #fff; font-family: 'DM Sans', sans-serif; overflow: hidden;
+          background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+          backdrop-filter: blur(35px) saturate(170%);
+          -webkit-backdrop-filter: blur(35px) saturate(170%);
+          border-radius: 32px;
+          border: 1px solid rgba(255,255,255,0.12);
+          padding: 24px;
+          position: relative;
+          color: #fff;
+          font-family: 'DM Sans', sans-serif;
+          overflow: hidden;
         }
+
+        /* Glow dinamic de fundal - matching cu cardul anterior */
         .card::before {
-          content: ''; position: absolute; top: -10%; left: -10%; width: 120%; height: 120%;
-          background: radial-gradient(circle at 20% 20%, var(--m-glow), transparent 40%);
+          content: ''; position: absolute; top: -15%; left: -10%; width: 130%; height: 130%;
+          background: radial-gradient(circle at 20% 20%, var(--m-glow), transparent 45%);
           z-index: 0; pointer-events: none; transition: background 0.8s ease;
         }
-        .header { position: relative; z-index: 2; display: flex; justify-content: space-between; margin-bottom: 10px; }
-        .title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; }
+
+        .header { position: relative; z-index: 2; display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 25px; }
+        .title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+        .badge { font-size: 10px; font-weight: 800; padding: 4px 12px; border-radius: 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--m-color); transition: 0.5s; }
+
+        /* Vizualizare Abstractă Expert */
+        .ac-visual-container { position: relative; height: 140px; display: flex; justify-content: center; align-items: center; z-index: 1; }
         
-        /* SVG & Animation Area */
-        .visual-area { position: relative; height: 130px; display: flex; justify-content: center; align-items: center; z-index: 1; }
-        .ac-unit { 
-            width: 220px; height: 60px; background: #fff; border-radius: 4px 4px 12px 12px; 
-            position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.4); 
+        .ac-unit-abstract {
+          width: 240px; height: 50px; 
+          background: rgba(255,255,255,0.03);
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 12px;
+          position: relative;
+          display: flex; align-items: center; justify-content: flex-end; padding-right: 15px;
+          box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);
         }
-        .ac-display-led {
-            position: absolute; right: 12px; top: 12px; width: 48px; height: 32px;
-            background: #000; border-radius: 6px; border: 1px solid #333;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+
+        .led-screen {
+          width: 55px; height: 32px; background: #000; border-radius: 6px;
+          border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; align-items: center; justify-content: center;
+          box-shadow: 0 0 20px var(--m-glow);
         }
-        .led-t { font-family: 'DM Mono', monospace; color: var(--m-color); font-size: 14px; text-shadow: 0 0 5px var(--m-color); }
+        .led-t { color: var(--m-color); font-family: 'Syne', sans-serif; font-size: 15px; }
+
+        /* Animație Airflow Abstractă (fără linii urâte) */
+        .air-glow {
+          position: absolute; top: 60px; width: 180px; height: 60px;
+          background: radial-gradient(ellipse at top, var(--m-glow), transparent 70%);
+          filter: blur(15px); opacity: 0; transition: 1s;
+          animation: pulseGlow 3s ease-in-out infinite;
+        }
+        @keyframes pulseGlow { 0%, 100% { opacity: 0.2; transform: scaleY(0.8); } 50% { opacity: 0.6; transform: scaleY(1.2); } }
+
+        /* Central Temp */
+        .temp-row { position: relative; z-index: 2; display: flex; align-items: center; justify-content: center; gap: 35px; margin-bottom: 30px; }
+        .temp-main { font-family: 'Syne', sans-serif; font-size: 52px; font-weight: 800; letter-spacing: -3px; }
         
-        /* Flow SVG */
-        .flow-svg { position: absolute; top: 60px; width: 200px; height: 50px; opacity: 0.4; }
-        .air-path { fill: none; stroke: var(--m-color); stroke-width: 2; stroke-dasharray: 8, 12; animation: flowAnim 1.2s linear infinite; }
-        @keyframes flowAnim { to { stroke-dashoffset: -20; } }
+        .btn-action {
+          width: 54px; height: 54px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1);
+          background: rgba(255,255,255,0.05); color: #fff; font-size: 24px; cursor: pointer; transition: 0.3s;
+          display: flex; align-items: center; justify-content: center;
+        }
+        .btn-action:hover { border-color: var(--m-color); background: rgba(255,255,255,0.1); transform: translateY(-2px); }
 
-        /* Middle Controls */
-        .temp-ctrl { position: relative; z-index: 2; display: flex; align-items: center; justify-content: center; gap: 30px; margin: 15px 0; }
-        .temp-main { font-family: 'Syne', sans-serif; font-size: 48px; font-weight: 800; letter-spacing: -2px; }
-        .btn-r { width: 48px; height: 48px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #fff; font-size: 22px; cursor: pointer; transition: 0.3s; }
-        .btn-r:hover { border-color: var(--m-color); background: rgba(255,255,255,0.1); }
+        /* Control Grid */
+        .modes-grid { display: flex; gap: 8px; margin-bottom: 25px; overflow-x: auto; padding-bottom: 5px; z-index: 2; position: relative; }
+        .mode-item {
+          flex: 1; min-width: 65px; padding: 12px 5px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);
+          background: rgba(255,255,255,0.03); color: rgba(255,255,255,0.4); font-size: 9px; font-weight: 700; cursor: pointer; text-align: center; transition: 0.3s;
+        }
+        .mode-item.active { background: var(--m-color); color: #000; border-color: var(--m-color); box-shadow: 0 10px 20px var(--m-glow); }
 
-        /* Modes Row */
-        .modes-row { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 20px; z-index: 2; position: relative; padding: 2px; }
-        .m-btn { flex: 1; padding: 10px 6px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.02); color: rgba(255,255,255,0.4); font-size: 9px; font-weight: 700; cursor: pointer; white-space: nowrap; }
-        .m-btn.active { background: var(--m-color); color: #000; border-color: var(--m-color); }
+        /* Stats & Secondary Controls */
+        .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; z-index: 2; position: relative; }
+        .stat-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 12px; border-radius: 18px; text-align: center; }
+        .stat-label { font-size: 8px; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: 4px; letter-spacing: 1px; }
+        .stat-val { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; }
 
-        /* Stats Grid */
-        .stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; z-index: 2; position: relative; margin-bottom: 20px; }
-        .s-box { background: rgba(255,255,255,0.03); padding: 10px; border-radius: 16px; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
-        .s-label { font-size: 8px; color: rgba(255,255,255,0.3); text-transform: uppercase; margin-bottom: 2px; }
-        .s-val { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; }
-
-        /* Action Buttons */
-        .actions { display: flex; gap: 8px; z-index: 2; position: relative; }
-        .a-btn { flex: 1; padding: 12px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #fff; font-weight: 700; font-size: 11px; cursor: pointer; }
-        .a-btn.on { border-color: var(--m-color); color: var(--m-color); }
+        .footer-btns { display: flex; gap: 10px; z-index: 2; position: relative; }
+        .f-btn { 
+          flex: 1; padding: 14px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1);
+          background: rgba(255,255,255,0.05); color: #fff; font-weight: 700; font-size: 11px; cursor: pointer; transition: 0.3s;
+        }
+        .f-btn.active { border-color: var(--m-color); color: var(--m-color); background: rgba(255,255,255,0.08); }
       </style>
-      
-      <div class="card" id="c">
+
+      <div class="card">
         <div class="header">
           <div>
-            <div class="title" id="t">--</div>
-            <div style="font-size: 10px; color: rgba(255,255,255,0.3)" id="sub">CLIMATE CONTROL</div>
+            <div class="title" id="friendly_name">--</div>
+            <div style="font-size: 10px; opacity: 0.3; letter-spacing: 1px;">PREMIUM CLIMATE</div>
           </div>
-          <div id="badge" style="font-size: 10px; font-weight: 800; color: var(--m-color)">OPTIM</div>
+          <div class="badge" id="status_badge">OFF</div>
         </div>
 
-        <div class="visual-area">
-          <div class="ac-unit">
-            <div class="ac-display-led">
-              <div class="led-t" id="l-t">--°</div>
-              <div style="font-size: 6px; color: #555" id="l-m">OFF</div>
+        <div class="ac-visual-container">
+          <div class="air-glow" id="air_glow"></div>
+          <div class="ac-unit-abstract">
+            <div class="led-screen">
+              <div class="led-t" id="led_temp">--</div>
+              <div style="font-size: 6px; opacity: 0.4;" id="led_mode">--</div>
             </div>
           </div>
-          <svg class="flow-svg" id="f-svg" viewBox="0 0 200 50">
-            <path class="air-path" d="M20,10 Q60,40 100,10 T180,10" />
-            <path class="air-path" d="M30,20 Q70,50 110,20 T190,20" style="animation-delay: -0.6s" />
-          </svg>
         </div>
 
-        <div class="temp-ctrl">
-          <button class="btn-r" id="minus">−</button>
-          <div class="temp-main" id="big-t">--°C</div>
-          <button class="btn-r" id="plus">+</button>
+        <div class="temp-row">
+          <button class="btn-action" id="temp_down">−</button>
+          <div class="temp-main" id="target_temp">--°C</div>
+          <button class="btn-action" id="temp_up">+</button>
         </div>
 
-        <div class="modes-row" id="m-row"></div>
+        <div class="modes-grid" id="modes_container"></div>
 
-        <div class="stats">
-          <div class="s-box"><div class="s-label">Interior</div><div class="s-val" id="s-in">--</div></div>
-          <div class="s-box"><div class="s-label">Exterior</div><div class="s-val" id="s-ex">--</div></div>
-          <div class="s-box"><div class="s-label">Consum</div><div class="s-val" id="s-pw">--</div></div>
+        <div class="stats-row">
+          <div class="stat-card"><div class="stat-label">Interior</div><div class="stat-val" id="cur_temp">--</div></div>
+          <div class="stat-card"><div class="stat-label">Exterior</div><div class="stat-val" id="ext_temp">--</div></div>
+          <div class="stat-card"><div class="stat-label">Consum</div><div class="stat-val" id="pwr_usage">--</div></div>
         </div>
 
-        <div class="actions">
-          <button class="a-btn" id="pwr">POWER</button>
-          <button class="a-btn" id="fan">FAN: AUTO</button>
-          <button class="a-btn" id="swng">SWING</button>
+        <div class="footer-btns">
+          <button class="f-btn" id="pwr_btn">POWER</button>
+          <button class="f-btn" id="fan_btn">FAN: --</button>
+          <button class="f-btn" id="swing_btn">SWING</button>
         </div>
       </div>
     `;
@@ -148,67 +169,77 @@ class AcClimateCard extends HTMLElement {
 
   _bindEvents() {
     const s = this.shadowRoot;
-    s.getElementById('minus').onclick = () => this._call('set_temperature', { temperature: this._curr - 1 });
-    s.getElementById('plus').onclick = () => this._call('set_temperature', { temperature: this._curr + 1 });
-    s.getElementById('pwr').onclick = () => this._call(this._state === 'off' ? 'turn_on' : 'turn_off');
-    s.getElementById('fan').onclick = () => this._cycle('fan_mode', 'fan_modes');
-    s.getElementById('swng').onclick = () => this._cycle('swing_mode', 'swing_modes');
+    s.getElementById('temp_down').onclick = () => this._changeTemp(-1);
+    s.getElementById('temp_up').onclick = () => this._changeTemp(1);
+    s.getElementById('pwr_btn').onclick = () => this._callService(this._hvacMode === 'off' ? 'turn_on' : 'turn_off');
+    s.getElementById('fan_btn').onclick = () => this._cycleAttr('fan_mode', 'fan_modes');
+    s.getElementById('swing_btn').onclick = () => this._cycleAttr('swing_mode', 'swing_modes');
   }
 
   _update(state, hass) {
-    const mode = state.state;
-    const cfg = MODES_CFG[mode] || MODES_CFG.off;
-    this._curr = state.attributes.temperature;
-    this._state = mode;
-
     const r = this.shadowRoot;
-    r.host.style.setProperty('--m-color', cfg.color);
-    r.host.style.setProperty('--m-glow', cfg.glow);
+    const attr = state.attributes;
+    const mode = state.state;
+    const theme = MODES_THEME[mode] || MODES_THEME.off;
+    this._hvacMode = mode;
+    this._targetTemp = attr.temperature;
 
-    r.getElementById('t').textContent = this._config.name || state.attributes.friendly_name;
-    r.getElementById('big-t').textContent = `${this._curr}°C`;
-    r.getElementById('l-t').textContent = `${this._curr}°`;
-    r.getElementById('l-m').textContent = cfg.disp;
-    
-    r.getElementById('f-svg').style.display = mode === 'off' ? 'none' : 'block';
-    r.getElementById('pwr').classList.toggle('on', mode !== 'off');
-    r.getElementById('fan').textContent = `FAN: ${state.attributes.fan_mode || 'AUTO'}`;
-    r.getElementById('swng').classList.toggle('on', state.attributes.swing_mode !== 'off');
+    // CSS Vars
+    r.host.style.setProperty('--m-color', theme.color);
+    r.host.style.setProperty('--m-glow', theme.glow);
 
-    // Stats
-    r.getElementById('s-in').textContent = `${state.attributes.current_temperature || '--'}°`;
-    r.getElementById('s-ex').textContent = `${hass.states[this._entities.tempExt]?.state || '--'}°`;
-    r.getElementById('s-pw').textContent = `${hass.states[this._entities.power]?.state || '0'}W`;
+    // Header & Visuals
+    r.getElementById('friendly_name').textContent = this._config.name || attr.friendly_name;
+    r.getElementById('status_badge').textContent = mode.toUpperCase();
+    r.getElementById('led_temp').textContent = `${attr.temperature || '--'}°`;
+    r.getElementById('led_mode').textContent = theme.label;
+    r.getElementById('target_temp').textContent = `${attr.temperature || '--'}°C`;
+    r.getElementById('air_glow').style.display = mode === 'off' ? 'none' : 'block';
 
-    this._renderModes(state.attributes.hvac_modes, mode);
+    // Stats (Auto-mapping logic)
+    const prefix = this._config.entity.replace('climate.', '');
+    r.getElementById('cur_temp').textContent = `${attr.current_temperature || '--'}°`;
+    r.getElementById('ext_temp').textContent = `${hass.states[`sensor.${prefix}_temperatura_exterioara`]?.state || '--'}°`;
+    r.getElementById('pwr_usage').textContent = `${hass.states[`sensor.${prefix}_power`]?.state || '0'}W`;
+
+    // Buttons State
+    r.getElementById('pwr_btn').classList.toggle('active', mode !== 'off');
+    r.getElementById('fan_btn').textContent = `FAN: ${attr.fan_mode?.toUpperCase() || '--'}`;
+    r.getElementById('swing_btn').classList.toggle('active', attr.swing_mode !== 'off');
+
+    this._renderModes(attr.hvac_modes, mode);
   }
 
   _renderModes(modes, active) {
-    const container = this.shadowRoot.getElementById('m-row');
+    const container = this.shadowRoot.getElementById('modes_container');
     if (container.innerHTML !== '') {
-        container.querySelectorAll('.m-btn').forEach(b => b.classList.toggle('active', b.dataset.m === active));
-        return;
+      container.querySelectorAll('.mode-item').forEach(el => el.classList.toggle('active', el.dataset.m === active));
+      return;
     }
     modes.forEach(m => {
-      const b = document.createElement('button');
-      b.className = `m-btn ${m === active ? 'active' : ''}`;
-      b.dataset.m = m;
-      b.textContent = (MODES_CFG[m]?.icon || '') + ' ' + m.toUpperCase();
-      b.onclick = () => this._call('set_hvac_mode', { hvac_mode: m });
-      container.appendChild(b);
+      const el = document.createElement('button');
+      el.className = `mode-item ${m === active ? 'active' : ''}`;
+      el.dataset.m = m;
+      el.textContent = (MODES_THEME[m]?.icon || '') + ' ' + m.toUpperCase();
+      el.onclick = () => this._callService('set_hvac_mode', { hvac_mode: m });
+      container.appendChild(el);
     });
   }
 
-  _call(svc, data = {}) {
-    this._hass.callService('climate', svc, { entity_id: this._config.entity, ...data });
+  _callService(service, data = {}) {
+    this._hass.callService('climate', service, { entity_id: this._config.entity, ...data });
   }
 
-  _cycle(attr, attrList) {
+  _changeTemp(delta) {
+    this._callService('set_temperature', { temperature: this._targetTemp + delta });
+  }
+
+  _cycleAttr(attr, listAttr) {
     const state = this._hass.states[this._config.entity];
-    const list = state.attributes[attrList] || [];
+    const list = state.attributes[listAttr] || [];
     const current = state.attributes[attr];
     const next = list[(list.indexOf(current) + 1) % list.length];
-    this._call(`set_${attr}`, { [attr]: next });
+    this._callService(`set_${attr}`, { [attr]: next });
   }
 }
 
