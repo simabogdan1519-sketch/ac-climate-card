@@ -36,13 +36,109 @@ function buildEntities(climateEntityId) {
 
 // ── Mode visual config — cream-friendly accent colors ──
 const MODES = {
-  cool:     { cls:'mode-cool', icon:'❄', label:'Răcire',     dispText:'COOL', rgb:'107,165,196', color:'#5a8fb0', light:'#7fb0cc', glow:'rgba(107,165,196,0.42)' },
-  heat:     { cls:'mode-heat', icon:'🔥', label:'Încălzire',  dispText:'HEAT', rgb:'212,140,90',  color:'#b87545', light:'#d49260', glow:'rgba(212,140,90,0.42)' },
-  fan_only: { cls:'mode-fan',  icon:'💨', label:'Ventilare',  dispText:'FAN',  rgb:'160,170,190', color:'#7a8aaa', light:'#a0b0c8', glow:'rgba(160,170,190,0.40)' },
-  dry:      { cls:'mode-dry',  icon:'💧', label:'Dezumidif.', dispText:'DRY',  rgb:'130,180,180', color:'#5e9494', light:'#8ab8b8', glow:'rgba(130,180,180,0.42)' },
-  auto:     { cls:'mode-auto', icon:'🔄', label:'Auto',       dispText:'AUTO', rgb:'111,174,127', color:'#5a9170', light:'#8fc99e', glow:'rgba(111,174,127,0.42)' },
-  off:      { cls:'mode-off',  icon:'○',  label:'Oprit',      dispText:'OFF',  rgb:'173,181,160', color:'#9ca38b', light:'#c0c8b0', glow:'rgba(173,181,160,0.30)' },
+  cool:     { cls:'mode-cool', icon:'❄', dispText:'COOL', rgb:'107,165,196', color:'#5a8fb0', light:'#7fb0cc', glow:'rgba(107,165,196,0.42)' },
+  heat:     { cls:'mode-heat', icon:'🔥', dispText:'HEAT', rgb:'212,140,90',  color:'#b87545', light:'#d49260', glow:'rgba(212,140,90,0.42)' },
+  fan_only: { cls:'mode-fan',  icon:'💨', dispText:'FAN',  rgb:'160,170,190', color:'#7a8aaa', light:'#a0b0c8', glow:'rgba(160,170,190,0.40)' },
+  dry:      { cls:'mode-dry',  icon:'💧', dispText:'DRY',  rgb:'130,180,180', color:'#5e9494', light:'#8ab8b8', glow:'rgba(130,180,180,0.42)' },
+  auto:     { cls:'mode-auto', icon:'🔄', dispText:'AUTO', rgb:'111,174,127', color:'#5a9170', light:'#8fc99e', glow:'rgba(111,174,127,0.42)' },
+  off:      { cls:'mode-off',  icon:'○',  dispText:'OFF',  rgb:'173,181,160', color:'#9ca38b', light:'#c0c8b0', glow:'rgba(173,181,160,0.30)' },
 };
+
+// ── Translations ──
+const TRANSLATIONS = {
+  ro: {
+    title_default: 'Aer Condiționat',
+    set_temp:      'Temperatură setată',
+    room:          'Cameră',
+    consumption:   'Consum',
+    outdoor:       'Exterior',
+    session_energy:'Energie sesiune',
+    total_energy:  'Total energie',
+    off:           'Oprit',
+    turn_on:       'Pornește',
+    turn_off:      'Oprește',
+    target:        'Țintă',
+    modes: {
+      cool: 'Răcire', heat: 'Încălzire', fan_only: 'Ventilare',
+      dry: 'Dezumidif.', auto: 'Auto', off: 'Oprit',
+    },
+  },
+  en: {
+    title_default: 'Air Conditioner',
+    set_temp:      'Set temperature',
+    room:          'Room',
+    consumption:   'Power',
+    outdoor:       'Outdoor',
+    session_energy:'Session energy',
+    total_energy:  'Total energy',
+    off:           'Off',
+    turn_on:       'Turn on',
+    turn_off:      'Turn off',
+    target:        'Target',
+    modes: {
+      cool: 'Cool', heat: 'Heat', fan_only: 'Fan',
+      dry: 'Dry', auto: 'Auto', off: 'Off',
+    },
+  },
+  de: {
+    title_default: 'Klimaanlage',
+    set_temp:      'Solltemperatur',
+    room:          'Raum',
+    consumption:   'Verbrauch',
+    outdoor:       'Außen',
+    session_energy:'Sitzungsenergie',
+    total_energy:  'Gesamtenergie',
+    off:           'Aus',
+    turn_on:       'Einschalten',
+    turn_off:      'Ausschalten',
+    target:        'Ziel',
+    modes: {
+      cool: 'Kühlen', heat: 'Heizen', fan_only: 'Lüften',
+      dry: 'Entfeucht.', auto: 'Auto', off: 'Aus',
+    },
+  },
+  fr: {
+    title_default: 'Climatiseur',
+    set_temp:      'Température réglée',
+    room:          'Pièce',
+    consumption:   'Consom.',
+    outdoor:       'Extérieur',
+    session_energy:'Énergie session',
+    total_energy:  'Énergie totale',
+    off:           'Éteint',
+    turn_on:       'Allumer',
+    turn_off:      'Éteindre',
+    target:        'Cible',
+    modes: {
+      cool: 'Froid', heat: 'Chaud', fan_only: 'Ventil.',
+      dry: 'Sec', auto: 'Auto', off: 'Éteint',
+    },
+  },
+  es: {
+    title_default: 'Aire Acondicionado',
+    set_temp:      'Temperatura fijada',
+    room:          'Habitación',
+    consumption:   'Consumo',
+    outdoor:       'Exterior',
+    session_energy:'Energía sesión',
+    total_energy:  'Energía total',
+    off:           'Apagado',
+    turn_on:       'Encender',
+    turn_off:      'Apagar',
+    target:        'Objetivo',
+    modes: {
+      cool: 'Frío', heat: 'Calor', fan_only: 'Ventil.',
+      dry: 'Seco', auto: 'Auto', off: 'Apagado',
+    },
+  },
+};
+
+function getTranslations(lang, hass) {
+  // Priority: explicit config lang > HA language > fallback ro
+  const candidate = lang || (hass?.language) || (hass?.locale?.language) || 'ro';
+  const base = candidate.toLowerCase().split('-')[0];
+  return TRANSLATIONS[base] || TRANSLATIONS.ro;
+}
 
 // ── Styles ──
 const STYLES = `
@@ -52,10 +148,6 @@ const STYLES = `
   :host { display: block; }
 
   /* ══ CARD SHELL ══ */
-  .card-wrap {
-    max-width: 480px;
-    margin: 0 auto;
-  }
   .card {
     background: linear-gradient(175deg, #f5f1ea 0%, #ede6db 100%);
     border-radius: 26px;
@@ -177,13 +269,13 @@ const STYLES = `
   }
   .ac-scene {
     position: relative;
-    width: 280px; height: 116px;
+    width: 320px; height: 132px;
   }
 
   /* ── AC Body ── */
   .ac-body {
     position: absolute; top: 0; left: 0; right: 0;
-    height: 116px; border-radius: 20px;
+    height: 132px; border-radius: 22px;
     background:
       radial-gradient(ellipse at 30% 12%, rgba(255,255,255,0.85) 0%, transparent 55%),
       linear-gradient(165deg, #fdf5e2 0%, #f5ead0 40%, #ecddb8 75%, #e0cfa0 100%);
@@ -213,8 +305,8 @@ const STYLES = `
 
   /* Top bevel */
   .ac-bevel {
-    position: absolute; top: 0; left: 20px; right: 20px; height: 2px;
-    border-radius: 20px 20px 0 0;
+    position: absolute; top: 0; left: 22px; right: 22px; height: 2px;
+    border-radius: 22px 22px 0 0;
     background: linear-gradient(90deg,
       transparent,
       rgba(255,255,255,0.7) 20%,
@@ -242,8 +334,8 @@ const STYLES = `
   /* ── DISPLAY ── */
   .ac-display {
     position: absolute;
-    top: 16px; left: 50%; transform: translateX(-50%);
-    width: 68px; height: 68px;
+    top: 18px; left: 50%; transform: translateX(-50%);
+    width: 76px; height: 76px;
     background: radial-gradient(circle at 32% 28%, #3a2a1f 0%, #1a1108 68%, #050200 100%);
     border-radius: 50%;
     display: flex; flex-direction: column;
@@ -277,7 +369,7 @@ const STYLES = `
   }
   .ac-dt {
     font-family: 'Space Mono', monospace;
-    font-size: 17px; font-weight: 700; letter-spacing: 0.4px;
+    font-size: 19px; font-weight: 700; letter-spacing: 0.4px;
     color: var(--accent-color); line-height: 1; z-index: 2;
     text-shadow: 0 0 8px var(--accent-glow);
     transition: color 0.5s, text-shadow 0.5s;
@@ -285,7 +377,7 @@ const STYLES = `
   .card.mode-off .ac-dt { color: #6b6259; text-shadow: none; }
   .ac-dm {
     font-family: 'Space Mono', monospace;
-    font-size: 6px; letter-spacing: 1.2px;
+    font-size: 6.5px; letter-spacing: 1.2px;
     color: var(--accent-color); margin-top: 4px;
     opacity: 0.65; z-index: 2;
     transition: color 0.5s;
@@ -306,33 +398,46 @@ const STYLES = `
   /* ── DOT GRID ── */
   .dot-grid-wrap {
     position: absolute;
-    top: 30px; left: 12px; right: 12px;
-    height: 38px;
+    top: 32px; left: 14px; right: 14px;
+    height: 44px;
     display: flex; justify-content: space-between; align-items: center;
     pointer-events: none; z-index: 2;
   }
   .dot-grid {
     display: grid;
-    grid-template-columns: repeat(9, 1fr);
+    grid-template-columns: repeat(10, 1fr);
     grid-template-rows: repeat(5, 1fr);
     gap: 2px;
-    width: 78px; height: 36px;
+    width: 92px; height: 42px;
   }
   .dot {
     aspect-ratio: 1;
     background: #c5b8a5;
     border-radius: 1.5px;
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.3);
-    transition: background 0.4s;
+    transition: background 0.6s ease, box-shadow 0.6s ease, opacity 0.6s ease;
+    opacity: 0.55;
   }
-  .dot.accent {
+  /* When OFF — all dots dim/neutral, no accent, no animation */
+  .card.mode-off .dot {
+    background: #c5b8a5 !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.3) !important;
+    opacity: 0.45;
+  }
+  /* When ON — base dots brighter cream */
+  .card.on .dot {
+    opacity: 0.7;
+  }
+  /* Accent dots — only visible when card is on (JS adds .accent class dynamically) */
+  .card.on .dot.accent {
     background: var(--accent-color);
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 0 4px var(--accent-glow);
+    opacity: 1;
+    animation: dotAccPulse 1.8s ease-in-out infinite;
   }
-  .card.on .dot.accent { animation: dotAccPulse 3.2s ease-in-out infinite; }
   @keyframes dotAccPulse {
-    0%,100% { background: var(--accent-color); }
-    50%     { background: var(--accent-light); box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 0 6px var(--accent-color); }
+    0%,100% { opacity: 1;   background: var(--accent-color); }
+    50%     { opacity: 0.5; background: var(--accent-light); }
   }
 
   /* ── STATUS LEDS ── */
@@ -374,8 +479,8 @@ const STYLES = `
   /* ── LOUVRE ── */
   .ac-louvre-wrap {
     position: absolute; bottom: 0; left: 0; right: 0;
-    height: 32px;
-    border-radius: 0 0 20px 20px;
+    height: 34px;
+    border-radius: 0 0 22px 22px;
     background: linear-gradient(180deg, rgba(180,140,80,0.04), rgba(180,140,80,0.12));
     border-top: 1px solid rgba(180,140,80,0.15);
     overflow: hidden;
@@ -413,7 +518,7 @@ const STYLES = `
   .ac-flow {
     position: absolute;
     bottom: -42px; left: 50%; transform: translateX(-50%);
-    width: 240px; height: 44px;
+    width: 280px; height: 44px;
     pointer-events: none;
   }
   .ac-stream {
@@ -441,7 +546,7 @@ const STYLES = `
   .ac-mist {
     position: absolute;
     bottom: -48px; left: 50%; transform: translateX(-50%);
-    width: 240px; height: 50px;
+    width: 280px; height: 50px;
     pointer-events: none;
   }
   .ac-mist-p {
@@ -464,13 +569,13 @@ const STYLES = `
   .ac-glow {
     position: absolute;
     bottom: -24px; left: 50%; transform: translateX(-50%);
-    width: 210px; height: 26px;
+    width: 250px; height: 26px;
     pointer-events: none;
     background: radial-gradient(ellipse, var(--accent-glow) 0%, transparent 70%);
     transition: background 1s ease, width 1s ease, height 1s ease, bottom 1s ease;
   }
   .card.mode-heat .ac-glow {
-    width: 250px !important; height: 46px !important; bottom: -22px !important;
+    width: 290px !important; height: 46px !important; bottom: -22px !important;
     background: radial-gradient(ellipse,
       rgba(212,140,90,0.45) 0%,
       rgba(184,117,69,0.20) 45%,
@@ -751,7 +856,6 @@ const STYLES = `
 
 // ── HTML Template ──
 const TEMPLATE = `
-  <div class="card-wrap">
     <div class="card mode-off" id="card">
 
       <div class="card-header">
@@ -814,7 +918,7 @@ const TEMPLATE = `
         <button class="btn-temp" id="btnMinus">−</button>
         <div class="temp-display">
           <div class="temp-big"   id="tempBig">--°</div>
-          <div class="temp-label">Temperatură setată</div>
+          <div class="temp-label" id="tempLabel">Temperatură setată</div>
         </div>
         <button class="btn-temp" id="btnPlus">+</button>
       </div>
@@ -841,7 +945,6 @@ const TEMPLATE = `
         <button class="btn primary" id="btnSwing">↕ --</button>
       </div>
     </div>
-  </div>
 `;
 
 // ════════════════════════════════════════════
@@ -857,6 +960,7 @@ class AcClimateCard extends HTMLElement {
       show_total_energy: true,
       show_temp_ext: true,
       show_temp_int: true,
+      language: null,  // null = auto-detect from HA, or set 'ro','en','de','fr','es'
       ...config,
     };
     this._entities = buildEntities(config.entity);
@@ -876,15 +980,47 @@ class AcClimateCard extends HTMLElement {
 
   _buildDots() {
     const sr = this.shadowRoot;
+    this._allDots = [];
     [sr.getElementById('dotGridL'), sr.getElementById('dotGridR')].forEach(grid => {
-      // 9 cols x 5 rows = 45 dots per side
-      for (let i = 0; i < 45; i++) {
+      // 10 cols x 5 rows = 50 dots per side
+      for (let i = 0; i < 50; i++) {
         const d = document.createElement('div');
         d.className = 'dot';
-        if (Math.random() < 0.22) d.classList.add('accent');
         grid.appendChild(d);
+        this._allDots.push(d);
       }
     });
+  }
+
+  // ── Twinkle: random subset of dots get .accent, refreshes periodically ──
+  _startTwinkle() {
+    if (this._twinkleTimer) return;
+    const tick = () => {
+      if (!this._allDots) return;
+      // Clear all accents
+      this._allDots.forEach(d => d.classList.remove('accent'));
+      // Pick ~22% of dots randomly to light up
+      const target = Math.floor(this._allDots.length * 0.22);
+      const indices = new Set();
+      while (indices.size < target) {
+        indices.add(Math.floor(Math.random() * this._allDots.length));
+      }
+      indices.forEach(idx => this._allDots[idx].classList.add('accent'));
+    };
+    tick();
+    this._twinkleTimer = setInterval(tick, 1400);
+  }
+
+  _stopTwinkle() {
+    if (this._twinkleTimer) {
+      clearInterval(this._twinkleTimer);
+      this._twinkleTimer = null;
+    }
+    if (this._allDots) this._allDots.forEach(d => d.classList.remove('accent'));
+  }
+
+  disconnectedCallback() {
+    this._stopTwinkle();
   }
 
   _buildParticles() {
@@ -948,6 +1084,8 @@ class AcClimateCard extends HTMLElement {
     const climateState = hass.states[entities.climate];
     if (!climateState) return;
 
+    const t = getTranslations(cfg.language, hass);
+
     const hvacMode   = climateState.state;
     const setTemp    = climateState.attributes.temperature ?? '--';
     const curTemp    = climateState.attributes.current_temperature;
@@ -980,29 +1118,35 @@ class AcClimateCard extends HTMLElement {
 
     card.className = `card ${modeCfg.cls}` + (isOff ? '' : ' on');
 
+    // Twinkle dots only when on
+    if (isOff) this._stopTwinkle();
+    else this._startTwinkle();
+
     // Header
     sr.getElementById('icon').textContent      = isOff ? '○' : modeCfg.icon;
-    sr.getElementById('title').textContent     = cfg.name ?? climateState.attributes.friendly_name ?? 'AC';
+    sr.getElementById('title').textContent     = cfg.name ?? climateState.attributes.friendly_name ?? t.title_default;
     sr.getElementById('sub').textContent       = cfg.area ?? '';
-    sr.getElementById('badgeText').textContent = isOff ? 'Oprit' : `${modeCfg.label} · ${setTemp}°C`;
+    const modeLabel = t.modes[hvacMode] || hvacMode;
+    sr.getElementById('badgeText').textContent = isOff ? t.off : `${modeLabel} · ${setTemp}°C`;
 
     // Display
     sr.getElementById('dispTemp').textContent = setTemp !== '--' ? `${setTemp}°` : '--°';
     sr.getElementById('dispMode').textContent = isOff ? 'OFF' : `${modeCfg.dispText} · ${String(fanMode).toUpperCase()}`;
     sr.getElementById('tempBig').textContent  = setTemp !== '--' ? `${setTemp}°` : '--°';
+    sr.getElementById('tempLabel').textContent = t.set_temp;
 
     // Temp buttons disabled when off
     sr.getElementById('btnMinus').disabled = isOff;
     sr.getElementById('btnPlus').disabled  = isOff;
 
     // Mode buttons
-    this._renderModeRow(hvacModes, hvacMode);
+    this._renderModeRow(hvacModes, hvacMode, t);
 
     // Stats — build dynamically based on enabled flags
-    this._renderStats({ tempInt, power, tempExt, show });
+    this._renderStats({ tempInt, power, tempExt, show, t });
 
     // Sensor pills — only energy ones
-    this._renderSensors({ curEng, totEng, show });
+    this._renderSensors({ curEng, totEng, show, t });
 
     // Progress — hidden when off
     const progressSection = sr.getElementById('progressSection');
@@ -1021,16 +1165,16 @@ class AcClimateCard extends HTMLElement {
         pct = 50; // fallback when no internal temp
       }
       sr.getElementById('progFill').style.width = pct + '%';
-      sr.getElementById('progLabel').textContent = modeCfg.label;
+      sr.getElementById('progLabel').textContent = modeLabel;
       sr.getElementById('progTime').textContent =
         (!isNaN(tInt) && !isNaN(tSet))
           ? `${tInt}° → ${tSet}°`
-          : `Țintă ${tSet}°`;
+          : `${t.target} ${tSet}°`;
     }
 
-    // Controls — clearer labels
+    // Controls — translated labels
     const btnPower = sr.getElementById('btnPower');
-    btnPower.textContent = isOff ? '⏻ Pornește' : '⏻ Oprește';
+    btnPower.textContent = isOff ? `⏻ ${t.turn_on}` : `⏻ ${t.turn_off}`;
     btnPower.className = 'btn ' + (isOff ? 'success' : 'danger');
 
     const btnFan   = sr.getElementById('btnFan');
@@ -1051,12 +1195,12 @@ class AcClimateCard extends HTMLElement {
     this._maxTemp    = maxTemp;
   }
 
-  _renderStats({ tempInt, power, tempExt, show }) {
+  _renderStats({ tempInt, power, tempExt, show, t }) {
     const stats = this.shadowRoot.getElementById('stats');
     const items = [];
-    if (show.tempInt) items.push({ k:'Cameră',   v: tempInt !== '--' && tempInt !== null ? `${tempInt}°` : '--' });
-    if (show.power)   items.push({ k:'Consum',   v: `${power} W` });
-    if (show.tempExt) items.push({ k:'Exterior', v: tempExt !== '--' && tempExt !== null ? `${tempExt}°` : '--' });
+    if (show.tempInt) items.push({ k: t.room,        v: tempInt !== '--' && tempInt !== null ? `${tempInt}°` : '--' });
+    if (show.power)   items.push({ k: t.consumption, v: `${power} W` });
+    if (show.tempExt) items.push({ k: t.outdoor,     v: tempExt !== '--' && tempExt !== null ? `${tempExt}°` : '--' });
 
     stats.dataset.count = items.length;
     const key = items.map(i => i.k).join('|');
@@ -1072,11 +1216,11 @@ class AcClimateCard extends HTMLElement {
     }
   }
 
-  _renderSensors({ curEng, totEng, show }) {
+  _renderSensors({ curEng, totEng, show, t }) {
     const strip = this.shadowRoot.getElementById('sensorStrip');
     const items = [];
-    if (show.curEng) items.push({ icon:'⚡', k:'Energie sesiune', v:`${curEng} kWh` });
-    if (show.totEng) items.push({ icon:'📊', k:'Total energie',   v:`${totEng} kWh` });
+    if (show.curEng) items.push({ icon:'⚡', k: t.session_energy, v:`${curEng} kWh` });
+    if (show.totEng) items.push({ icon:'📊', k: t.total_energy,   v:`${totEng} kWh` });
 
     strip.dataset.count = items.length;
     const key = items.map(i => i.k).join('|');
@@ -1097,9 +1241,9 @@ class AcClimateCard extends HTMLElement {
     }
   }
 
-  _renderModeRow(hvacModes, active) {
+  _renderModeRow(hvacModes, active, t) {
     const row = this.shadowRoot.getElementById('modeRow');
-    const key = hvacModes.join(',');
+    const key = hvacModes.join(',') + '|' + (t ? Object.keys(t.modes).map(k => t.modes[k]).join(',') : '');
     if (this._lastModeKey === key) {
       row.querySelectorAll('.mode-btn').forEach(b =>
         b.classList.toggle('active', b.dataset.mode === active)
@@ -1110,10 +1254,13 @@ class AcClimateCard extends HTMLElement {
     row.innerHTML = '';
     hvacModes.forEach(mode => {
       const cfg = MODES[mode] || { icon: mode, dispText: mode };
+      const label = (t && t.modes[mode]) || cfg.dispText || mode;
       const b = document.createElement('button');
       b.className = 'mode-btn' + (mode === active ? ' active' : '');
       b.dataset.mode = mode;
-      b.textContent = mode === 'off' ? '⏹ Off' : `${cfg.icon} ${cfg.dispText || mode}`;
+      b.textContent = mode === 'off'
+        ? `⏹ ${label}`
+        : `${cfg.icon} ${label}`;
       b.onclick = () => this._setMode(mode);
       row.appendChild(b);
     });
